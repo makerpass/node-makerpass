@@ -96,9 +96,10 @@ exports.Memberships = {
 //
 // First-class Memberships API
 //
-exports.me         = apiRequest('get', '/me');
-exports.me.groups  = apiRequest('get', '/me/groups');
-exports.me.schools = apiRequest('get', '/me/schools');
+exports.me             = apiRequest('get', '/me');
+exports.me.groups      = apiRequest('get', '/me/groups');
+exports.me.schools     = apiRequest('get', '/me/schools');
+exports.me.adminStatus = apiRequest('get', '/me/admin-status');
 
 exports.user        = (userUid, token) => apiRequest('get', `/users/${userUid}`, token);
 exports.user.groups = (userUid, token) => apiRequest('get', `/users/${userUid}/groups`, token);
