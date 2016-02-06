@@ -14,6 +14,10 @@ exports.authWithSession = function (options) {
       else throw new Error('[Test Env] Please set req.user and req.scopes');
     }
 
+    if ( ! req[options.name] ) {
+      return req.status(401).send({ reason: "no_session" })
+    }
+
     exports.authToken( req[options.name][options.propName] )
       .then(function(response) {
         req.user = response.data.user;
@@ -36,7 +40,13 @@ exports.authWithBearer = function (options) {
       else throw new Error('[Test Env] Please set req.user and req.scopes');
     }
 
-    exports.authToken( req.get('Authorization') )
+    var token = req.get('Authorization').replace(/^Bearer /, '')
+
+    if ( ! token ) {
+      return res.status(401).send({ reason: 'invalid_authorization_header' })
+    }
+
+    exports.authToken( token )
       .then(function(response) {
         req.user = response.data.user;
         req.scopes = response.data.scopes;
@@ -59,10 +69,14 @@ exports.requireScope = function () {
 
   return function (req, res, next) {
 
+    if ( ! req.scopes ) {
+      return res.status(401).send({ reason: 'no_scopes' })
+    }
+
     for (var i=0; i < requiredScopes.length; i++) {
       if ( req.scopes.indexOf( requiredScopes[i] ) === -1 )
         return res.status(401).send({
-          error: 'scope_required',
+          reason: 'scope_required',
           scope: requiredScopes[i] })
     }
     next()
@@ -75,8 +89,8 @@ exports.requireScope = function () {
 //
 var request = curry(function (host, method, url, accessToken) {
 
-  http[method](url, {
-    headers: { 'Authorization': `bearer ${token}` }
+  return http[method]( host + url, {
+    headers: { 'Authorization': `bearer ${accessToken}` }
   })
     .then( response => response.data );
 });
