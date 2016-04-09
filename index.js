@@ -15,7 +15,7 @@ exports.authWithSession = function (options) {
     }
 
     if ( ! req[options.name] ) {
-      return req.status(401).send({ reason: "no_session" })
+      return res.status(401).send({ reason: "no_session" })
     }
 
     exports.authToken( req[options.name][options.propName] )
