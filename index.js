@@ -15,18 +15,11 @@ exports.authWithSession = function (options) {
     }
 
     if ( ! req[options.name] ) {
-      return res.status(401).send({ reason: "no_session" })
+      return res.status(401).send({ reason: "no_session" });
     }
 
-    exports.authToken( req[options.name][options.propName] )
-      .then(function(response) {
-        req.user = response.data.user;
-        req.scopes = response.data.scopes;
-        next();
-      })
-      .catch(function(errResponse) {
-        res.status(errResponse.status).send(errResponse.data);
-      });
+    var token = req[options.name][options.propName];
+    authTokenAndHandleResponse( token, options, req, res, next );
   };
 }
 
@@ -40,25 +33,70 @@ exports.authWithBearer = function (options) {
       else throw new Error('[Test Env] Please set req.user and req.scopes');
     }
 
-    var token = req.get('Authorization').replace(/^Bearer /, '')
+    var token = req.get('Authorization').replace(/^Bearer /, '');
 
     if ( ! token ) {
-      return res.status(401).send({ reason: 'invalid_authorization_header' })
+      return res.status(401).send({ reason: 'invalid_authorization_header' });
     }
 
-    exports.authToken( token )
-      .then(function(response) {
-        req.user = response.data.user;
-        req.scopes = response.data.scopes;
-        next();
-      })
-      .catch(function(errResponse) {
-        res.status(errResponse.status).send(errResponse.data);
-      });
+    authTokenAndHandleResponse( token, options, req, res, next );
   };
 };
 
-exports.authToken = function (token) {
+exports.authWithBearerOrSession = function (options) {
+  options = options || {};
+  options.name = 'session';
+  options.propName = options.propName || 'accessToken';
+
+  return function (req, res, next) {
+
+    if ( process.env.NODE_ENV === 'test' ) {
+      if ( req.user && req.scopes ) return next();
+      else throw new Error('[Test Env] Please set req.user and req.scopes');
+    }
+
+    // Bearer token
+    var header = req.get('Authorization');
+    var token  = header && header.replace(/^Bearer /, '');
+
+    if ( ! token ) {
+      // Session token
+      token = req[options.name] && req[options.name][options.propName];
+    }
+    else {
+      // There is a bearer token, so this is a programmatic request;
+      // don't redirect in the case of failure.
+      delete options.redirectOnFailure;
+    }
+
+    authTokenAndHandleResponse( token, options, req, res, next );
+  };
+
+}
+
+function authTokenAndHandleResponse (token, options, req, res, next) {
+
+  // Normalize token location between different auths for convenience
+  req.makerpassToken = token
+
+  exports.authToken( token )
+    .then(function(response) {
+      req.user = response.data.user;
+      req.scopes = response.data.scopes;
+      next();
+    })
+    .catch(function(errResponse) {
+      if ( options.redirectOnFailure ) {
+        res.redirect( options.redirectOnFailure );
+      }
+      else {
+        res.status(errResponse.status).send(errResponse.data);
+      }
+    });
+}
+
+
+exports.authToken = function (token, options) {
   return http.get('https://api.makerpass.com/me', {
     headers: { 'Authorization': 'Bearer ' + token }
   });

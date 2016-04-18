@@ -20,8 +20,12 @@ The `authWithSession` middleware works particularly well if you are storing your
 
 ```js
 app.post('/comments', MP.authWithSession(), function (req, res) {
+
+  req.makerpassToken //=> token stored here to normalize between different auths
+
   req.user   //=> { uid, name, email, avatar_url }
   req.scopes //=> ['public', 'profile.basic', ...]
+
   res.send(`Welcome, ${req.user.name}!`);
 });
 
@@ -30,32 +34,68 @@ app.post('/comments', MP.authWithSession(), function (req, res) {
 //
 
 // This will read req.session.accessToken
-MP.authWithHeader();
+MP.authWithSession();
 // Same as above
-MP.authWithHeader({ name: 'session', propName: 'accessToken' });
+MP.authWithSession({ name: 'session', propName: 'accessToken' });
 
 // This will read req.mySession.accessToken
-MP.authWithHeader({ name: 'mySession' });
+MP.authWithSession({ name: 'mySession' });
 
 // This will read req.session.mpToken
-MP.authWithHeader({ propName: 'mpToken' });
+MP.authWithSession({ propName: 'mpToken' });
+
+// You can also specify a redirect on failure
+MP.authWithSession({ redirectOnFailure: '/' })
 ```
 
 ### Header Auth
 
-If your client is sending a MakerPass OAuth access token via the `Authorization` header, you can auto-check for that using `authWithHeader`:
+If your client is sending a MakerPass OAuth access token via the `Authorization` header, you can auto-check for that using `authWithBearer`:
 
 ```js
 //
 // This works if a client sends a request with header that looks like:
 // 'Authorization': 'Bearer myToken123'
 //
-app.post('/comments', MP.authWithHeader(), function (req, res) {
+app.post('/comments', MP.authWithBearer(), function (req, res) {
+
+  req.makerpassToken //=> token stored here to normalize between different auths
+
   req.user   //=> { uid, name, email, avatar_url }
   req.scopes //=> ['public', 'profile.basic', ...]
+
   res.send(`Welcome, ${req.user.name}!`);
 });
 ```
+
+### Multi-Auth
+
+If you want to enable both session and header auth, you can use `authWithBearerOrSession`:
+
+```js
+//
+// This works if a client sends a request with header that looks like:
+// 'Authorization': 'Bearer myToken123'
+//
+app.post('/comments',
+  //
+  // The Authorization header will takes priority.
+  // The redirectOnFailure option only applies when there is no Bearer token.
+  //
+  MP.authWithBearerOrSession({ redirectOnFailure: '/' }),
+
+  function (req, res) {
+
+    req.makerpassToken //=> token stored here to normalize between different auths
+
+    req.user   //=> { uid, name, email, avatar_url }
+    req.scopes //=> ['public', 'profile.basic', ...]
+
+    res.send(`Welcome, ${req.user.name}!`);
+  }
+);
+```
+
 
 ### Direct Auth
 
