@@ -156,4 +156,5 @@ exports.me.adminStatus = apiRequest('get', '/me/admin-status');
 exports.user        = (userUid, token) => apiRequest('get', `/users/${userUid}`, token);
 exports.user.groups = (userUid, token) => apiRequest('get', `/users/${userUid}/groups`, token);
 
-exports.group = (nameId, token) => apiRequest('get', `/groups/${nameId}`, token);
+exports.group             = (nameId, token) => apiRequest('get', `/groups/${nameId}`, token);
+exports.group.memberships = (nameId, token) => apiRequest('get', `/groups/${nameId}/memberships`, token);
