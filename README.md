@@ -153,6 +153,8 @@ The following methods are available:
 
 - `MP.group(nameId, myAccessToken)` - Get information for a group. **Note:** A name id is a string. For example: `mks-24`
 
+- `MP.memberships(nameId, myAccessToken)` - Get all memberships for a group. See note above about name ids
+
 ### Manual URLs
 
 If you find a MakerPass API URL that is not supported by this lib, no need to wait; you can make requests manually:

@@ -157,3 +157,4 @@ exports.user        = (userUid, token) => apiRequest('get', `/users/${userUid}`,
 exports.user.groups = (userUid, token) => apiRequest('get', `/users/${userUid}/groups`, token);
 
 exports.group = (nameId, token) => apiRequest('get', `/groups/${nameId}`, token);
+exports.memberships = (nameId, token) => apiRequest('get', `/groups/${nameId}/memberships`, token);
