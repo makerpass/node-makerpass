@@ -86,7 +86,10 @@ function authTokenAndHandleResponse (token, options, req, res, next) {
       next();
     })
     .catch(function(errResponse) {
-      if ( options.redirectOnFailure ) {
+      if ( options.required === false ) {
+        next()
+      }
+      else if ( options.redirectOnFailure ) {
         res.redirect( options.redirectOnFailure );
       }
       else {

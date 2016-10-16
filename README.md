@@ -14,6 +14,12 @@ var MP = require('node-makerpass');
 
 There are three ways to protect your endpoints behind a MakerPass auth: via sessions, a header, or directly.
 
+For any of the following auths, you can pass in `required: false` to allow the request to continue if the user is not signed in. This allows signed-out users to visit your endpoints. For example:
+
+```js
+MP.authWithSession({ required: false })
+```
+
 ### Session Auth
 
 The `authWithSession` middleware works particularly well if you are storing your MakerPass OAuth access token inside a session (similar to [the example shown here](https://github.com/makerpass/passport-makerpass#setup-with-express)):
