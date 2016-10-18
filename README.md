@@ -149,6 +149,8 @@ The following methods are available:
 
 - `MP.me.groups(myAccessToken)` - Get all groups for owner of access token
 
+- `MP.me.groupAccess(nameId, myAccessToken)` - Get level of access information for a particular group
+
 - `MP.me.schools(myAccessToken)` - Get all schools for owner of access token
 
 - `MP.me.adminStatus(myAccessToken)` - Get all groups and schools you currently admin
