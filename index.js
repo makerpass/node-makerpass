@@ -160,4 +160,10 @@ exports.user        = (userUid, token) => apiRequest('get', `/users/${userUid}`,
 exports.user.groups = (userUid, token) => apiRequest('get', `/users/${userUid}/groups`, token);
 
 exports.group = (nameId, token) => apiRequest('get', `/groups/${nameId}`, token);
-exports.memberships = (nameId, token) => apiRequest('get', `/groups/${nameId}/memberships`, token);
+exports.group.memberships = (nameId, token) => apiRequest('get', `/groups/${nameId}/memberships`, token);
+
+
+exports.memberships = (nameId, token) => {
+  console.warn(".memberships() is deprecated. Please use .group.memberships() instead.")
+  return apiRequest('get', `/groups/${nameId}/memberships`, token)
+};
