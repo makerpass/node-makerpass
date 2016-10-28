@@ -10,7 +10,7 @@ Then require it in your node app:
 var MP = require('node-makerpass');
 ```
 
-## Authentication
+## Authentication (AuthN)
 
 There are three ways to protect your endpoints behind a MakerPass auth: via sessions, a header, or directly.
 
@@ -20,7 +20,7 @@ For any of the following auths, you can pass in `required: false` to allow the r
 MP.authWithSession({ required: false })
 ```
 
-### Session Auth
+### Session AuthN
 
 The `authWithSession` middleware works particularly well if you are storing your MakerPass OAuth access token inside a session (similar to [the example shown here](https://github.com/makerpass/passport-makerpass#setup-with-express)):
 
@@ -54,7 +54,7 @@ MP.authWithSession({ propName: 'mpToken' });
 MP.authWithSession({ redirectOnFailure: '/' })
 ```
 
-### Header Auth
+### Header AuthN
 
 If your client is sending a MakerPass OAuth access token via the `Authorization` header, you can auto-check for that using `authWithBearer`:
 
@@ -74,7 +74,7 @@ app.post('/comments', MP.authWithBearer(), function (req, res) {
 });
 ```
 
-### Multi-Auth
+### Multi-AuthN
 
 If you want to enable both session and header auth, you can use `authWithBearerOrSession`:
 
@@ -103,7 +103,7 @@ app.post('/comments',
 ```
 
 
-### Direct Auth
+### Direct AuthN
 
 If you already have access to your token, or want to do things manually, you can use `authToken`:
 
@@ -119,6 +119,8 @@ MP.authToken(myAccessToken)
   });
 ```
 
+## Authorization (AuthZ)
+
 ### Scope Validation
 
 You can control access by requiring certain scopes from your user's accessToken. For example:
@@ -129,9 +131,60 @@ app.get(
   MP.authWithSession(),
   MP.requireScope('admin.read'),
   function (req, res) {
-    res.send("You are an admin.")
+    res.send("You have admin-level read access.")
   }
 )
+```
+
+### Group Memberships Validation
+
+`MP.requireMembership` is a convenient gate for ensuring your oauth user is a member of the group. By default, this also passes for any school admin of that group. You can provide `{ allowSchoolAdmins: false }` as the last argument to disable this.
+
+This middleware requires either `group_id` or `group_uid` to be defined in `req.params`.
+
+```js
+app.post(
+  '/groups/:group_id/chats',
+  MP.authWithBearerOrSession(),
+
+  MP.requireMembership('instructor', 'fellow'),
+  // MP.requireMembership('instructor', 'fellow', { allowSchoolAdmins: false }),
+
+  function (req, res) {
+    console.log("You are a a fellow or instructor of the group")
+  }
+)
+```
+
+### User Access Validation
+
+`MP.requireUserConnection` ensures that the oauth user has a valid connection to the user in question. Note that if the oauth user is an admin of the target user's school, this passes by default.
+
+You can specify which key to use in `req.params`; `user_uid` is used by default.
+
+```js
+//
+// Example #1: Validate oauth user is instructor of the student
+//            OR oauth user is an admin of a school (with ANY role) the student is a member of.
+//
+MP.requireUserConnection({ role: 'instructor' })
+
+//
+// Example #2: Validate oauth user is instructor OR fellow of the student
+//            OR oauth user is an admin of a school (with ANY role) the student is a member of.
+//
+MP.requireUserConnection({ role: ['instructor', 'fellow'], paramKey: 'uid' })
+
+//
+// Example #3: Validate oauth user is instructor of student,
+//             AND NOT ALLOWING any school admins
+//
+MP.requireUserConnection({ role: 'instructor', schoolAdminRole: false })
+
+//
+// Example #4: Validate oauth user is a school admin **owner** (other option is 'collaborator')
+//
+MP.requireUserConnection({ schoolAdminRole: 'owner' })
 ```
 
 ## API methods

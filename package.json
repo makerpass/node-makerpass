@@ -1,6 +1,6 @@
 {
   "name": "node-makerpass",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "A library to conveniently access the MakerPass API",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/makerpass/node-makerpass#readme",
   "dependencies": {
-    "axios": "^0.9.1",
+    "axios": "^0.15.2",
     "curry": "^1.2.0"
   },
   "devDependencies": {
