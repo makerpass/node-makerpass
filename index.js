@@ -14,11 +14,12 @@ exports.authWithSession = function (options) {
       else throw new Error('[Test Env] Please set req.user and req.scopes');
     }
 
-    if ( ! req[options.name] ) {
+    var token = req[options.name] && req[options.name][options.propName];
+
+    if ( ! token ) {
       return res.status(401).send({ reason: "no_session" });
     }
 
-    var token = req[options.name][options.propName];
     authTokenAndHandleResponse( token, options, req, res, next );
   };
 }
