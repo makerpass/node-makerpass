@@ -1,6 +1,6 @@
 {
   "name": "node-makerpass",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A library to conveniently access the MakerPass API",
   "main": "index.js",
   "scripts": {
